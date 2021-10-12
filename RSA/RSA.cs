@@ -22,7 +22,7 @@ namespace RSA {
                 keySize += 16 - keySize % 16;
             }
 
-            keySize        = Math.Min(384, Math.Max(keySize, 2048));
+            keySize        = Math.Min(384, keySize);
             _blockByteSize = keySize / 8;
             GenerateKey(keySize);
         }
