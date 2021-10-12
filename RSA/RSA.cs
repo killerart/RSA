@@ -22,14 +22,14 @@ namespace RSA {
                 keySize += 16 - keySize % 16;
             }
 
-            keySize = Math.Min(384, Math.Max(keySize, 2048));
+            keySize        = Math.Min(384, Math.Max(keySize, 2048));
             _blockByteSize = keySize / 8;
             GenerateKey(keySize);
         }
 
         private void GenerateRandomPrimes(int keySize) {
-            using var rsa = new RSACryptoServiceProvider(keySize);
-            var parameters = rsa.ExportParameters(true);
+            using var rsa        = new RSACryptoServiceProvider(keySize);
+            var       parameters = rsa.ExportParameters(true);
             P = new BigInteger(parameters.P, true, true);
             Q = new BigInteger(parameters.Q, true, true);
         }
@@ -57,10 +57,11 @@ namespace RSA {
 
             var blocks = new ReadOnlyMemory<byte>[numOfBlocks];
             for (var i = 0; i < numOfBlocks; i++) {
+                var start = i * _blockByteSize;
                 try {
-                    blocks[i] = message.Slice(i * _blockByteSize, _blockByteSize);
+                    blocks[i] = message.Slice(start, _blockByteSize);
                 } catch (ArgumentOutOfRangeException) {
-                    blocks[i] = message.Slice(i * _blockByteSize);
+                    blocks[i] = message.Slice(start);
                 }
             }
 
@@ -77,8 +78,8 @@ namespace RSA {
 
         public string Decrypt(ReadOnlyMemory<byte> encryptedMessage) {
             var numOfBlocks = encryptedMessage.Length / _blockByteSize;
-            
-            var blocks      = new ReadOnlyMemory<byte>[numOfBlocks];
+
+            var blocks = new ReadOnlyMemory<byte>[numOfBlocks];
             for (var i = 0; i < numOfBlocks; i++) {
                 blocks[i] = encryptedMessage.Slice(i * _blockByteSize, _blockByteSize);
             }
@@ -88,12 +89,12 @@ namespace RSA {
                          numOfBlocks,
                          i => {
                              var messageBigInt = new BigInteger(blocks[i].Span, true);
-                             messageBigInt       = BigInteger.ModPow(messageBigInt, D, N);
+                             messageBigInt      = BigInteger.ModPow(messageBigInt, D, N);
                              decryptedBlocks[i] = messageBigInt.ToByteArray(true);
                          });
 
             var decryptedBytes = decryptedBlocks.SelectMany(block => block).ToArray();
-            
+
             return Encoding.Default.GetString(decryptedBytes);
         }
     }
