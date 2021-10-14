@@ -9,7 +9,7 @@ namespace RSA.Test {
             var message = Console.ReadLine();
 
             var encryptedMessage = rsa.Encrypt(message);
-            Console.WriteLine($"Encrypted message: {Convert.ToHexString(encryptedMessage)}");
+            Console.WriteLine($"\nEncrypted message: {Convert.ToHexString(encryptedMessage)}\n");
 
             var decryptedMessage = rsa.Decrypt(encryptedMessage);
             Console.WriteLine($"Decrypted message: {decryptedMessage}");

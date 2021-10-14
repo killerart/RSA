@@ -46,10 +46,15 @@ namespace RSA {
 
         public byte[] Encrypt(string message) {
             var messageBytes = Encoding.Default.GetBytes(message);
-            return Encrypt(messageBytes);
+            return ConvertMessage(messageBytes, E);
         }
 
-        public byte[] Encrypt(ReadOnlyMemory<byte> message) {
+        public string Decrypt(ReadOnlyMemory<byte> encryptedMessage) {
+            var decryptedBytes = ConvertMessage(encryptedMessage, D);
+            return Encoding.Default.GetString(decryptedBytes);
+        }
+
+        public byte[] ConvertMessage(ReadOnlyMemory<byte> message, BigInteger exponent) {
             var numOfBlocks = message.Length / _blockByteSize;
             if (message.Length % _blockByteSize != 0) {
                 numOfBlocks++;
@@ -70,32 +75,10 @@ namespace RSA {
                          numOfBlocks,
                          i => {
                              var messageBigInt = new BigInteger(blocks[i].Span, true);
-                             messageBigInt      = BigInteger.ModPow(messageBigInt, E, N);
+                             messageBigInt      = BigInteger.ModPow(messageBigInt, exponent, N);
                              encryptedBlocks[i] = messageBigInt.ToByteArray(true);
                          });
             return encryptedBlocks.SelectMany(block => block).ToArray();
-        }
-
-        public string Decrypt(ReadOnlyMemory<byte> encryptedMessage) {
-            var numOfBlocks = encryptedMessage.Length / _blockByteSize;
-
-            var blocks = new ReadOnlyMemory<byte>[numOfBlocks];
-            for (var i = 0; i < numOfBlocks; i++) {
-                blocks[i] = encryptedMessage.Slice(i * _blockByteSize, _blockByteSize);
-            }
-
-            var decryptedBlocks = new byte[numOfBlocks][];
-            Parallel.For(0,
-                         numOfBlocks,
-                         i => {
-                             var messageBigInt = new BigInteger(blocks[i].Span, true);
-                             messageBigInt      = BigInteger.ModPow(messageBigInt, D, N);
-                             decryptedBlocks[i] = messageBigInt.ToByteArray(true);
-                         });
-
-            var decryptedBytes = decryptedBlocks.SelectMany(block => block).ToArray();
-
-            return Encoding.Default.GetString(decryptedBytes);
         }
     }
 }
