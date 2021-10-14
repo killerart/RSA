@@ -54,7 +54,7 @@ namespace RSA {
             return Encoding.Default.GetString(decryptedBytes);
         }
 
-        public byte[] ConvertMessage(ReadOnlyMemory<byte> message, BigInteger exponent) {
+        private byte[] ConvertMessage(ReadOnlyMemory<byte> message, BigInteger exponent) {
             var numOfBlocks = message.Length / _blockByteSize;
             if (message.Length % _blockByteSize != 0) {
                 numOfBlocks++;
