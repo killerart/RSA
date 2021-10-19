@@ -3,7 +3,7 @@
 namespace RSA {
     public static class BigIntegerExtensions {
         public static BigInteger? ModInverse(this BigInteger a, BigInteger m) {
-            var (gcd, x, y) = GcdExtended(a, m);
+            var (gcd, x, _) = GcdExtended(a, m);
             if (gcd != 1) {
                 return null;
             }

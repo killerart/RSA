@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,7 +16,7 @@ namespace RSA {
 
         private readonly int _blockByteSize;
 
-        public RSA(int keySize) {
+        public RSA(int keySize = 2048) {
             if (keySize % 16 != 0) {
                 keySize += 16 - keySize % 16;
             }
@@ -70,15 +69,17 @@ namespace RSA {
                 }
             }
 
-            var encryptedBlocks = new byte[numOfBlocks][];
+            var encryptedMessage = new byte[numOfBlocks * _blockByteSize];
             Parallel.For(0,
                          numOfBlocks,
                          i => {
                              var messageBigInt = new BigInteger(blocks[i].Span, true);
-                             messageBigInt      = BigInteger.ModPow(messageBigInt, exponent, N);
-                             encryptedBlocks[i] = messageBigInt.ToByteArray(true);
+                             messageBigInt = BigInteger.ModPow(messageBigInt, exponent, N);
+                             var start          = i * _blockByteSize;
+                             var encryptedBlock = encryptedMessage.AsSpan().Slice(start, _blockByteSize);
+                             messageBigInt.TryWriteBytes(encryptedBlock, out _, true);
                          });
-            return encryptedBlocks.SelectMany(block => block).ToArray();
+            return encryptedMessage;
         }
     }
 }
