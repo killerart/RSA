@@ -59,23 +59,21 @@ namespace RSA {
                 numOfBlocks++;
             }
 
-            var blocks = new ReadOnlyMemory<byte>[numOfBlocks];
-            for (var i = 0; i < numOfBlocks; i++) {
-                var start = i * _blockByteSize;
-                try {
-                    blocks[i] = message.Slice(start, _blockByteSize);
-                } catch (ArgumentOutOfRangeException) {
-                    blocks[i] = message.Slice(start);
-                }
-            }
-
             var encryptedMessage = new byte[numOfBlocks * _blockByteSize];
             Parallel.For(0,
                          numOfBlocks,
                          i => {
-                             var messageBigInt = new BigInteger(blocks[i].Span, true);
+                             var start = i * _blockByteSize;
+
+                             ReadOnlyMemory<byte> block;
+                             try {
+                                 block = message.Slice(start, _blockByteSize);
+                             } catch (ArgumentOutOfRangeException) {
+                                 block = message.Slice(start);
+                             }
+
+                             var messageBigInt = new BigInteger(block.Span, true);
                              messageBigInt = BigInteger.ModPow(messageBigInt, exponent, N);
-                             var start          = i * _blockByteSize;
                              var encryptedBlock = encryptedMessage.AsSpan().Slice(start, _blockByteSize);
                              messageBigInt.TryWriteBytes(encryptedBlock, out _, true);
                          });
