@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 
 namespace RSA {
     public class RSA {
-        private static readonly BigInteger E = 65537;
+        private static readonly BigInteger e = 65537;
 
-        private BigInteger P;
-        private BigInteger Q;
-        private BigInteger N;
-        private BigInteger DN;
-        private BigInteger D;
+        private BigInteger p;
+        private BigInteger q;
+        private BigInteger n;
+        private BigInteger d;
 
         private readonly int _blockByteSize;
 
@@ -30,27 +29,28 @@ namespace RSA {
         private void GenerateRandomPrimes(int keySize) {
             using var rsa        = System.Security.Cryptography.RSA.Create(keySize);
             var       parameters = rsa.ExportParameters(true);
-            P = new BigInteger(parameters.P, true, true);
-            Q = new BigInteger(parameters.Q, true, true);
+            p = new BigInteger(parameters.P, true, true);
+            q = new BigInteger(parameters.Q, true, true);
         }
 
         private void GenerateKey(int keySize) {
+            BigInteger dn;
             do {
                 GenerateRandomPrimes(keySize);
-                DN = (P - 1) * (Q - 1);
-            } while (BigInteger.GreatestCommonDivisor(E, DN) != BigInteger.One);
+                dn = (p - 1) * (q - 1);
+            } while (BigInteger.GreatestCommonDivisor(e, dn) != BigInteger.One);
 
-            N = P * Q;
-            D = E.ModInverse(DN) ?? throw new Exception("There is no mod inverse");
+            n = p * q;
+            d = e.ModInverse(dn) ?? throw new Exception("There is no mod inverse");
         }
 
         public byte[] Encrypt(string message) {
             var messageBytes = Encoding.Default.GetBytes(message);
-            return ConvertMessage(messageBytes, E);
+            return ConvertMessage(messageBytes, e);
         }
 
         public string Decrypt(ReadOnlyMemory<byte> encryptedMessage) {
-            var decryptedBytes = ConvertMessage(encryptedMessage, D);
+            var decryptedBytes = ConvertMessage(encryptedMessage, d);
             return Encoding.Default.GetString(decryptedBytes).TrimEnd('\0');
         }
 
@@ -74,7 +74,7 @@ namespace RSA {
                              }
 
                              var blockAsNum = new BigInteger(block.Span, true);
-                             blockAsNum = blockAsNum.ModPow(exponent, N);
+                             blockAsNum = blockAsNum.ModPow(exponent, n);
                              var encryptedBlock = encryptedMessage.AsSpan().Slice(start, _blockByteSize);
                              blockAsNum.TryWriteBytes(encryptedBlock, out _, true);
                          });
