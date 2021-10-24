@@ -73,10 +73,10 @@ namespace RSA {
                                  block = message.Slice(start);
                              }
 
-                             var messageBigInt = new BigInteger(block.Span, true);
-                             messageBigInt = messageBigInt.ModPow(exponent, N);
+                             var blockAsNum = new BigInteger(block.Span, true);
+                             blockAsNum = blockAsNum.ModPow(exponent, N);
                              var encryptedBlock = encryptedMessage.AsSpan().Slice(start, _blockByteSize);
-                             messageBigInt.TryWriteBytes(encryptedBlock, out _, true);
+                             blockAsNum.TryWriteBytes(encryptedBlock, out _, true);
                          });
             return encryptedMessage;
         }
