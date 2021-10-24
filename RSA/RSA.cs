@@ -54,7 +54,7 @@ namespace RSA {
             return Encoding.Default.GetString(decryptedBytes).TrimEnd('\0');
         }
 
-        private byte[] ConvertMessage(ReadOnlyMemory<byte> message, BigInteger exponent) {
+        private byte[] ConvertMessage(ReadOnlyMemory<byte> message, BigInteger key) {
             var numOfBlocks = message.Length / _blockByteSize;
             if (message.Length % _blockByteSize != 0) {
                 numOfBlocks++;
@@ -73,10 +73,10 @@ namespace RSA {
                                  block = message.Slice(start);
                              }
 
-                             var blockAsNum = new BigInteger(block.Span, true);
-                             blockAsNum = blockAsNum.ModPow(exponent, n);
-                             var encryptedBlock = encryptedMessage.AsSpan().Slice(start, _blockByteSize);
-                             blockAsNum.TryWriteBytes(encryptedBlock, out _, true);
+                             var m = new BigInteger(block.Span, true);
+                             m = m.ModPow(key, n);
+                             var span = encryptedMessage.AsSpan().Slice(start, _blockByteSize);
+                             m.TryWriteBytes(span, out _, true);
                          });
             return encryptedMessage;
         }
