@@ -74,7 +74,7 @@ namespace RSA {
                              }
 
                              var messageBigInt = new BigInteger(block.Span, true);
-                             messageBigInt = BigInteger.ModPow(messageBigInt, exponent, N);
+                             messageBigInt = messageBigInt.ModPow(exponent, N);
                              var encryptedBlock = encryptedMessage.AsSpan().Slice(start, _blockByteSize);
                              messageBigInt.TryWriteBytes(encryptedBlock, out _, true);
                          });

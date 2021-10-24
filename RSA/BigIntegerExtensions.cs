@@ -21,5 +21,9 @@ namespace RSA {
             var y = x1;
             return (gcd, x, y);
         }
+
+        public static BigInteger ModPow(this BigInteger value, BigInteger exponent, BigInteger modulus) {
+            return BigInteger.ModPow(value, exponent, modulus);
+        }
     }
 }
