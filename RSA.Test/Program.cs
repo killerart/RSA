@@ -3,7 +3,7 @@
 namespace RSA.Test {
     class Program {
         static void Main(string[] args) {
-            var rsa = new RSA(384);
+            var rsa = new RSA(2048);
 
             Console.Write("Input message: ");
             var message = Console.ReadLine();

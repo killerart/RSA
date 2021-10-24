@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Numerics;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+
+// ReSharper disable InconsistentNaming
 
 namespace RSA {
     public class RSA {
@@ -17,17 +18,17 @@ namespace RSA {
         private readonly int _blockByteSize;
 
         public RSA(int keySize = 2048) {
-            if (keySize % 16 != 0) {
-                keySize += 16 - keySize % 16;
+            if (keySize % 64 != 0) {
+                keySize += 64 - keySize % 64;
             }
 
-            keySize        = Math.Max(384, keySize);
+            keySize        = Math.Max(512, keySize);
             _blockByteSize = keySize / 8;
             GenerateKey(keySize);
         }
 
         private void GenerateRandomPrimes(int keySize) {
-            using var rsa        = new RSACryptoServiceProvider(keySize);
+            using var rsa        = System.Security.Cryptography.RSA.Create(keySize);
             var       parameters = rsa.ExportParameters(true);
             P = new BigInteger(parameters.P, true, true);
             Q = new BigInteger(parameters.Q, true, true);
@@ -50,7 +51,7 @@ namespace RSA {
 
         public string Decrypt(ReadOnlyMemory<byte> encryptedMessage) {
             var decryptedBytes = ConvertMessage(encryptedMessage, D);
-            return Encoding.Default.GetString(decryptedBytes);
+            return Encoding.Default.GetString(decryptedBytes).TrimEnd('\0');
         }
 
         private byte[] ConvertMessage(ReadOnlyMemory<byte> message, BigInteger exponent) {
